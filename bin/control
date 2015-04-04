@@ -120,7 +120,8 @@ function stop() {
   fi
 
   if [ -n $zpid ]; then
-    /bin/kill $zpid
+    #/bin/kill $zpid
+    /bin/kill -0 "$zpid" > /dev/null
     local ret=$?
     if [ $ret -eq 0 ]; then
       local TIMEOUT=10

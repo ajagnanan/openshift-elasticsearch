@@ -5,7 +5,7 @@ Description: "Elasticsearch is a flexible and powerful open source, distributed,
 Version: 1.5.0
 License: MIT
 Vendor: elasticsearch.org
-Cartridge-Version: 1.0.0
+Cartridge-Version: 1.1.0
 Cartridge-Vendor: ajagnanan
 
 Categories:
