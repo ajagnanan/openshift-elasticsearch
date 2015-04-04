@@ -72,3 +72,13 @@ mobz/elasticsearch-head
 
 ## Uncomment line below to install this plugin
 #polyfractal/elasticsearch-segmentspy
+
+
+## Description:
+##   Site plugin for Elasticsearch to add authentication and authorization
+##
+## URL:
+##   http://elastic.co
+
+#elasticsearch/license/latest
+#elasticsearch/shield/latest
