@@ -38,6 +38,46 @@ Nginx is configured by editing the file `nginx.conf.erb` from the git repo's roo
 #### Kibana
 Kibana is configured by editing the file `kibana.yml.erb` from the git repo's root.
 
+#### Security
+
+Authentication and authorization is handled by elastic.co. The two plugins needed are `license` and `shield`. The steps to enable security are:
+
+  - uncomment these two plugins in your repo's `plugins.txt` file
+
+    ```
+    elasticsearch/license/latest
+    elasticsearch/shield/latest
+    ```
+  - uncomment the credential lines in `kibana.yml.erb`
+    ```
+    kibana_elasticsearch_username: kibana
+    kibana_elasticsearch_password: elastic
+    ```
+  - push repo
+    ```
+    git commit -a -m 'adding authentication and authorization'
+    git push
+    ```
+
+The `esusers` utility can be run with the following command:
+
+  
+  ```
+  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/shield/esusers
+  e.g. $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/shield/esusers useradd admin -r admin
+  ```
+
+A default `kibana` user is bootstrapped so that Kibana will work.
+
+Caveat:
+The `config` directory that elasticsearch is using is located in `$OPENSHIFT_REPO_DIR/config`, but the `esusers` script updates the `$OPENSHIFT_ELASTICSEARCH_DIR/usr/config` directory. For now, the following can be done in order for credentials to be picked up:
+
+  ```
+  cp -R $OPENSHIFT_ELASTICSEARCH_DIR/usr/config/shield $OPENSHIFT_REPO_DIR/config
+  ```
+
+Do note that this will overwrite the bootstrapped configs, so re-adding the `kibana` user is necessary.
+
 ### Updates
 
 Only Kibana is upgradeable. The setup looks at an environment variable to handle the upgrade.
