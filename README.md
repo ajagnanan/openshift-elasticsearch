@@ -48,25 +48,26 @@ Authentication and authorization is handled by elastic.co. The two plugins neede
     elasticsearch/license/latest
     elasticsearch/shield/latest
     ```
-  - uncomment the credential lines in `kibana.yml.erb`
+  - uncomment the credential lines in your repo's `kibana.yml.erb` file
+  
     ```
     kibana_elasticsearch_username: kibana
     kibana_elasticsearch_password: elastic
     ```
   - push repo
+  
     ```
     git commit -a -m 'adding authentication and authorization'
     git push
     ```
 
 The `esusers` utility can be run with the following command:
-
   
   ```
   $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/shield/esusers
   e.g. $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/shield/esusers useradd admin -r admin
   ```
-
+The server should not need to be restarted. 
 A default `kibana` user is bootstrapped so that Kibana will work.
 
 Caveat:
