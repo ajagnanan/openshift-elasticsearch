@@ -53,7 +53,7 @@ function start() {
   export ES_INCLUDE="$OPENSHIFT_REPO_DIR/config/elasticsearch.in.sh"
 
   # add -d before -p to run in background
-  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/elasticsearch -d -p $ES_PID_FILE -D "es.path.conf=$ES_CONFIG_DIR"
+  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/elasticsearch -d -p $ES_PID_FILE -D "es.path.conf=$ES_CONFIG_DIR" -D "es.config=$ES_CONFIG_DIR/elasticsearch.yml"
 
   echo "Starting Nginx"
   if [ -f "$NGINX_EXEC" ]; then
