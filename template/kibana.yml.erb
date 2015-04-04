@@ -1,12 +1,11 @@
 # Kibana is served by a back end server. This controls which port to use.
 port: 5601
-#public_port: <%= ENV['OPENSHIFT_ELASTICSEARCH_KIBANA_PROXY_PORT'] %>
 
 # The host to bind the server to.
 host: "<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>"
 
 # The Elasticsearch instance to use for all your queries.
-elasticsearch_url: "http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:9200"
+elasticsearch_url: "http://<%= ENV['OPENSHIFT_APP_DNS'] %>/<%= ENV['ELASTICSEARCH_PATH'] %>"
 
 # preserve_elasticsearch_host true will send the hostname specified in `elasticsearch`. If you set it to false,
 # then the host you use to connect to *this* Kibana instance will be sent.
