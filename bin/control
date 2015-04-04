@@ -1,0 +1,179 @@
+#!/bin/bash -e
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+source $OPENSHIFT_ELASTICSEARCH_DIR/lib/util
+
+function _is_running() {
+  if [ -f $ES_PID_FILE ]; then
+    local zpid=$(cat $ES_PID_FILE 2> /dev/null)
+    local myid=$(id -u)
+    if `ps -opid,args --pid $zpid 2>&1 &> /dev/null`; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+function _is_nginx_running() {
+  if [ -f $NGINX_PID_FILE ]; then
+    local zpid=$(cat $NGINX_PID_FILE 2> /dev/null)
+    local myid=$(id -u)
+    if `ps -opid,args --pid $zpid 2>&1 &> /dev/null`; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+function _is_kibana_running() {
+  if [ -f $KIBANA_PID_FILE ]; then
+    local zpid=$(cat $KIBANA_PID_FILE 2> /dev/null)
+    local myid=$(id -u)
+    if `ps -opid,args --pid $zpid 2>&1 &> /dev/null`; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+function start() {
+  if _is_running; then
+    echo "ElasticSearch is already running" 1>&2
+    return 0
+  fi
+
+  _build_config
+
+  echo "Starting ElasticSearch"
+  export PUBLISH_HOST=$(python -c "import socket; print socket.gethostbyname('`hostname`')")
+  export ES_HEAP_SIZE="`_es_heap_size`"
+  export ES_INCLUDE="$OPENSHIFT_REPO_DIR/config/elasticsearch.in.sh"
+
+  # add -d before -p to run in background
+  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/elasticsearch -d -p $ES_PID_FILE -D "es.path.conf=$ES_CONFIG_DIR"
+
+  echo "Starting Nginx"
+  if [ -f "$NGINX_EXEC" ]; then
+      if [ -f "$OPENSHIFT_REPO_DIR/nginx.conf.erb" ]; then
+          oo-erb $OPENSHIFT_REPO_DIR/nginx.conf.erb > $OPENSHIFT_REPO_DIR/nginx.conf
+      fi
+      # nginx will always use the prefix defined at compile time unless an absolute path to the conf file is given
+      nohup "$NGINX_EXEC" -c "$NGINX_CONFIG_FILE" 2>&1
+      [ "$?" == "0" ] && wait_for_pid_file $NGINX_PID_FILE
+  else
+      echo "WARN: Could not find the compiled application versions/$NGINX_VERSION/bin/nginx, will not start"
+  fi
+
+  echo "Starting Kibana"
+  if [ -f "$OPENSHIFT_REPO_DIR/kibana.yml.erb" ]; then
+      oo-erb $OPENSHIFT_REPO_DIR/kibana.yml.erb > $OPENSHIFT_REPO_DIR/kibana.yml
+      # copy to right location
+      cp $OPENSHIFT_REPO_DIR/kibana.yml $OPENSHIFT_ELASTICSEARCH_DIR/kibana/config/kibana.yml
+    	cp $OPENSHIFT_REPO_DIR/kibana.yml $OPENSHIFT_ELASTICSEARCH_DIR/kibana/src/config/kibana.yml
+  fi
+
+  # Make sure elasticsearch is up and running first
+  esUrl="http://$OPENSHIFT_ELASTICSEARCH_IP:$OPENSHIFT_ELASTICSEARCH_PORT/$ELASTICSEARCH_PATH"
+  until $(curl --output /dev/null --silent --head --fail $esUrl); do
+    sleep 10
+  done
+  bash -c "$OPENSHIFT_ELASTICSEARCH_DIR/kibana/bin/kibana > $OPENSHIFT_ELASTICSEARCH_DIR/logs/kibana.log &"
+}
+
+function stop() {
+  if ! _is_running; then
+    echo "ElasticSearch is already stopped" 1>&2
+    return 0
+  fi
+
+  echo "Stopping Nginx"
+  if [ -f "$NGINX_PID_FILE" ]; then
+      pid=`cat "$NGINX_PID_FILE" 2> /dev/null`
+      eval "'$NGINX_EXEC' -c '$NGINX_CONFIG_FILE' -s stop"
+      wait_for_stop $pid
+  fi
+
+  echo "Stopping ElasticSearch"
+  if [ -f $ES_PID_FILE ]; then
+    local zpid=$(cat $ES_PID_FILE 2> /dev/null)
+  fi
+
+  if [ -n $zpid ]; then
+    /bin/kill $zpid
+    local ret=$?
+    if [ $ret -eq 0 ]; then
+      local TIMEOUT=10
+      while [ $TIMEOUT -gt 0 ] &&  _is_running ; do
+        /bin/kill -0 "$zpid" > /dev/null 2>&1  ||  break
+        sleep 1
+        let TIMEOUT=${TIMEOUT}-1
+      done
+    fi
+  fi
+
+  echo "Stopping Kibana"
+  if [ -f $KIBANA_PID_FILE ]; then
+    local zpid=$(cat $KIBANA_PID_FILE 2> /dev/null)
+  fi
+
+  if [ -n $zpid ]; then
+    /bin/kill $zpid
+    local ret=$?
+    if [ $ret -eq 0 ]; then
+      local TIMEOUT=10
+      while [ $TIMEOUT -gt 0 ] &&  _is_running ; do
+        /bin/kill -0 "$zpid" > /dev/null 2>&1  ||  break
+        sleep 1
+        let TIMEOUT=${TIMEOUT}-1
+      done
+    fi
+  fi
+}
+
+function restart() {
+  stop
+  start
+}
+
+function status() {
+  local output=""
+  local esUrl="http://$OPENSHIFT_APP_DNS"
+  if output=$(curl $esUrl &> /dev/null); then
+    client_result "Application is running"
+  else
+    client_result "Application is either stopped or inaccessible"
+  fi
+}
+
+function deploy() {
+   _install_plugins
+}
+
+function tidy() {
+    client_message "Emptying log dir: $OPENSHIFT_ELASTICSEARCH_DIR/logs"
+    shopt -s dotglob
+    rm -rf logs/*
+}
+function update() {
+    version=${NGINX_VERSION:-1.7.8}
+    echo "Rebuilding Nginx v$version"
+    stop
+    mkdir -p tmp/build
+    bin/compile tmp/build
+    bin_dir="nginx/versions/$version/bin"
+    mkdir -p $bin_dir
+    cp -f tmp/build/out/nginx $bin_dir
+    rm -rf tmp/build
+}
+
+case "$1" in
+  start)             start ;;
+  stop)              stop ;;
+  restart | reload ) restart $1 ;;
+  status)            status ;;
+  deploy)            deploy ;;
+  *)                 exit 0
+esac

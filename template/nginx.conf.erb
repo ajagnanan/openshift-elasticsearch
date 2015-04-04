@@ -1,0 +1,25 @@
+server {
+    listen  <%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:<%= ENV['OPENSHIFT_ELASTICSEARCH_PORT'] %>;
+    client_max_body_size 512M;
+
+    location ^~ /<%= ENV['ELASTICSEARCH_PATH'] %> {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+
+        rewrite ^/<%= ENV['ELASTICSEARCH_PATH'] %>/?(.*) /$1 break;
+        proxy_pass       http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:9200;
+        index  index.html index.htm;
+    }
+
+    location ^~ / {
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+
+        proxy_pass       http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:5601;
+        index  index.html index.htm;
+    }
+}

@@ -1,0 +1,53 @@
+Name: elasticsearch
+Cartridge-Short-Name: ELASTICSEARCH
+Display-Name: Elasticsearch 1.5.0
+Description: "Elasticsearch is a flexible and powerful open source, distributed, real-time search and analytics engine. Architected from the ground up for use in distributed environments where reliability and scalability are must haves, Elasticsearch gives you the ability to move easily beyond simple full-text search."
+Version: 1.5.0
+License: MIT
+Vendor: elasticsearch.org
+Cartridge-Version: 0.0.3
+Cartridge-Vendor: ajagnanan
+
+Categories:
+  - web_framework
+  - service
+
+Provides:
+  - elasticsearch
+  - elasticsearch-1
+  - elasticsearch-1.5
+  - elasticsearch-1.5.0
+
+Publishes:
+  publish-unicast-host:
+    Type: NET_TCP:elasticsearch-cluster-info
+  publish-http-url:
+    Type: NET_TCP:httpd-proxy-info
+  publish-gear-endpoint:
+    Type: NET_TCP:gear-endpoint-info
+
+Subscribes:
+  set-unicast-hosts:
+    Type: NET_TCP:elasticsearch-cluster-info
+
+Scaling:
+  Min: 1
+  Max: -1
+
+Endpoints:
+  - Private-IP-Name: IP
+    Private-Port-Name: PORT
+    Private-Port: 8080
+    Public-Port-Name: PROXY_PORT
+    Mappings:
+    - Frontend: ""
+      Backend: ""
+      Options: { websocket: true }
+    - Frontend: "/health"
+      Backend: ""
+      Options: { health: true }
+
+  - Private-IP-Name:   IP
+    Private-Port-Name: TRANSPORT_PORT
+    Private-Port:      9300
+    Public-Port-Name:  TRANSPORT_PROXY_PORT
