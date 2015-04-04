@@ -53,7 +53,7 @@ function start() {
   export ES_INCLUDE="$OPENSHIFT_REPO_DIR/config/elasticsearch.in.sh"
 
   # add -d before -p to run in background
-  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/elasticsearch -d -p $ES_PID_FILE -D "es.path.conf=$ES_CONFIG_DIR" -D "es.config=$ES_CONFIG_DIR/elasticsearch.yml"
+  $OPENSHIFT_ELASTICSEARCH_DIR/usr/bin/elasticsearch -d -p $ES_PID_FILE -D "es.path.conf=$ES_CONFIG_DIR"
 
   echo "Starting Nginx"
   if [ -f "$NGINX_EXEC" ]; then
@@ -77,7 +77,7 @@ function start() {
 
   # Make sure elasticsearch is up and running first
   esUrl="http://$OPENSHIFT_ELASTICSEARCH_IP:9200"
-  until $(curl -s -o /dev/null -w '%{http_code}\n' $esUrl >= 500); do
+  until $(curl -s -o /dev/null -w '%{http_code}\n' $esUrl -ge 500); do
     sleep 10
   done
   bash -c "$OPENSHIFT_ELASTICSEARCH_DIR/kibana/bin/kibana > $OPENSHIFT_ELASTICSEARCH_DIR/logs/kibana.log &"
