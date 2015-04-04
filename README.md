@@ -1,6 +1,6 @@
 OpenShift Elasticsearch Cartridge
 =================================
-This cartridge provides an Elasticsearch cluster as a standalone application with a Kibana 4.0 dashboard. Kibana is served on the root `/` and Elasticsearch on `/elasticsearch`
+This cartridge provides an Elasticsearch cluster as a standalone application with a Kibana 4.0 dashboard. Kibana is served on the root `/` and Elasticsearch on `/elasticsearch`. A health check url is also configured and is on `/health`.
 
 To create your Elasticsearch app, run:
 
