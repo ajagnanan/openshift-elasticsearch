@@ -30,7 +30,6 @@
 # multiple clusters on the same network, make sure you're using unique names.
 #
 cluster.name: elasticsearch-${OPENSHIFT_APP_UUID}
-shield.audit.enabled: true
 
 #################################### Node #####################################
 
@@ -172,7 +171,8 @@ path.plugins: ${OPENSHIFT_DATA_DIR}/elasticsearch-plugins
 # If a plugin listed here is not installed for current node, the node will not start.
 #
 #plugin.mandatory: mapper-attachments,lang-groovy
-
+shield.audit.enabled: true
+shield.transport.filter.enabled: false
 
 ################################### Memory ####################################
 
