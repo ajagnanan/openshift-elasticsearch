@@ -40,7 +40,9 @@ Kibana is configured by editing the file `kibana.yml.erb` from the git repo's ro
 
 ### Updates
 
-Currently, just Kibana is upgradeable. The setup looks at an environment variable to handle the upgrade. The steps are as follows:
+Only Kibana is upgradeable. The setup looks at an environment variable to handle the upgrade.
+
+The steps are as follows:
 
   - rhc set-env KIBANA_VERSION=4.0.2 -a <app> --namespace <domain>
   - trigger a `deploy` by pushing a change with git
