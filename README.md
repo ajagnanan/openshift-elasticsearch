@@ -38,5 +38,14 @@ Nginx is configured by editing the file `nginx.conf.erb` from the git repo's roo
 #### Kibana
 Kibana is configured by editing the file `kibana.yml.erb` from the git repo's root.
 
+### Updates
+
+Currently, just Kibana is upgradeable. The setup looks at an environment variable to handle the upgrade. The steps are as follows:
+
+  - rhc set-env KIBANA_VERSION=4.0.2 -a <app> --namespace <domain>
+  - trigger a `deploy` by pushing a change with git
+
+Note: only Kibana 4 is supported by this cartridge
+
 ### License
 This cartridge is [MIT](http://opensource.org/licenses/MIT) licensed.
