@@ -76,8 +76,11 @@ function start() {
   fi
 
   # Make sure elasticsearch is up and running first
-  esUrl="http://$OPENSHIFT_ELASTICSEARCH_IP:9200"
-  until [ $(curl -s -o /dev/null -w '%{http_code}\n' $esUrl) -ge 500 ]; do
+  esUrl="http://$OPENSHIFT_ELASTICSEARCH_IP:$OPENSHIFT_ELASTICSEARCH_PORT/$ELASTICSEARCH_PATH"
+  counter=0
+  until [ $(curl -s -o /dev/null -w '%{http_code}\n' $esUrl) -ge 500 -o $counter -gt 6 ]; do
+    echo "counter $counter"
+    let counter=counter+1
     sleep 10
   done
   bash -c "$OPENSHIFT_ELASTICSEARCH_DIR/kibana/bin/kibana > $OPENSHIFT_ELASTICSEARCH_DIR/logs/kibana.log &"
