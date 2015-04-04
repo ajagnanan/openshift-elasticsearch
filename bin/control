@@ -77,7 +77,7 @@ function start() {
 
   # Make sure elasticsearch is up and running first
   esUrl="http://$OPENSHIFT_ELASTICSEARCH_IP:$OPENSHIFT_ELASTICSEARCH_PORT/$ELASTICSEARCH_PATH"
-  until $(curl --output /dev/null --silent --head --fail $esUrl); do
+  until $(curl -s -o /dev/null -w '%{http_code}\n' $esUrl > 500); do
     sleep 10
   done
   bash -c "$OPENSHIFT_ELASTICSEARCH_DIR/kibana/bin/kibana > $OPENSHIFT_ELASTICSEARCH_DIR/logs/kibana.log &"
@@ -150,7 +150,7 @@ function status() {
 
 function deploy() {
   _install_kibana_version ${KIBANA_VERSION}
-  _install_plugins
+ _install_plugins
 }
 
 function tidy() {
