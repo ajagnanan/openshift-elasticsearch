@@ -149,7 +149,8 @@ function status() {
 }
 
 function deploy() {
-   _install_plugins
+  _install_kibana_version ${KIBANA_VERSION}
+  _install_plugins
 }
 
 function tidy() {

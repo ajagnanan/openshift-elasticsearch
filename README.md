@@ -25,6 +25,8 @@ To install Elasticsearch plugins, edit the `plugins.txt` file, commit, and push 
 
 You can also install plugins from a .zip file. Simply place it inside dir `plugins/`, git add, commit and push.
 
+Plugin urls will be served off of `/elasticsearch/_plugin/<name>/`.
+
 ### Configuration
 
 #### Elasticsearch
