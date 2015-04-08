@@ -20,7 +20,7 @@ http {
 
     # Custom logstash format
     log_format logstash '$http_host '
-                        '$remote_addr [$time_local] '
+                        '$http_x_forwarded_for [$time_local] '
                         '"$request" $status $body_bytes_sent '
                         '"$http_referer" "$http_user_agent" '
                         '$request_time '
